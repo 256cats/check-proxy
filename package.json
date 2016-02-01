@@ -1,0 +1,31 @@
+{
+  "name": "check-proxy",
+  "version": "0.0.1",
+  "description": "Fast proxy checker with socks and https support",
+  "main": "index.js",
+
+  "dependencies": {
+    "bluebird": "^3.1.1",
+    "lodash": "~3.7.0",
+    "geoip-ultralight": "^0.1.1",
+    "curling": "^0.3.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "check proxy",
+    "test proxy"
+  ],
+  "author": "Andrey E. <andrey@256cats.com> (256cats.com)",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/256cats/check-proxy/blob/master/LICENSE"
+    }
+  ],
+  "devDependencies": {
+    "sinon": "^1.17.3",
+    "mocha": "*"
+  }
+}

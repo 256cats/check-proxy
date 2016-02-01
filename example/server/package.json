@@ -1,0 +1,27 @@
+{
+  "name": "OpenShift-Sample-Proxy-Checker",
+  "version": "1.0.0",
+  "description": "Proxy checker on OpenShift",
+  "author": {
+    "name": "Andrey E",
+    "email": "andrey@256cats.com",
+    "url": "http://256cats.com/"
+  },
+  "homepage": "http://256cats.com/",
+  "engines": {
+    "node": ">= 0.6.0",
+    "npm": ">= 1.0.0"
+  },
+
+  "dependencies": {
+    "express": "^4.8.0",
+  	"body-parser": "^1.5.2",
+  	"lodash": "^3.7.0",
+  	"cookie-parser": "*"
+  },
+  "devDependencies": {},
+  "bundleDependencies": [],
+
+  "private": true,
+  "main": "server.js"
+}
