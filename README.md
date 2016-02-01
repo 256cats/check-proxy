@@ -16,7 +16,12 @@ It will return a promise that is either fulfilled with array of working proxies 
 TODO:
  * check proxy speed
  * add custom callbacks for website checks
- 
+
+ ## Installation
+
+  npm install check-proxy --save
+
+
 ## Usage
 
 Library consists of two parts - client and server. This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for OpenShift server app. Websites are checked against specified regex.
@@ -122,3 +127,11 @@ app.listen(port, ipaddress, function() {
               Date(Date.now() ), ipaddress, port);
 });
 ````
+
+## Tests
+
+  npm test
+
+## Release History
+
+* 0.0.1 Initial release
