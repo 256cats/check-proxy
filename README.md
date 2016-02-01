@@ -13,6 +13,10 @@ What it does:
 
 It will return a promise that is either fulfilled with array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect on provided port.
 
+TODO:
+ * check proxy speed
+ * add custom callbacks for website checks
+ 
 ## Usage
 
 Library consists of two parts - client and server. This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for OpenShift server app. Websites are checked against specified regex.
