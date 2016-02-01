@@ -1,4 +1,4 @@
-# Proxy-checker - Advanced Node proxy testing library
+# Check-proxy - Advanced Node proxy testing library
 
 This is an advanced proxy checking library. Requires curl.
 

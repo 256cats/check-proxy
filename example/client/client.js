@@ -1,6 +1,6 @@
-var checkProxy = require('../../index').check;
+var checkProxy = require('check-proxy').check;
 checkProxy({
-	testHost: 'ping.rhcloud.com', // put your ping server url here
+	testHost: 'ping.rhcloud.com', // put your ping app url here
 	proxyIP: '107.151.152.218', // proxy ip to test
   proxyPort: 80, // proxy port to test
   localIP: '185.103.27.23', // local machine ip to test

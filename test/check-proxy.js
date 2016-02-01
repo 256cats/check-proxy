@@ -5,7 +5,7 @@ var sinon = require('sinon');
 var curl = curlModule.connect();
 sinon.stub(curlModule, 'connect').returns(curl); // stub it, so connect() always returns the same instance
 var checkProxy = require('../index.js').check;
-Promise.promisifyAll(curl);
+//Promise.promisifyAll(curl);
 
 //console.log('called1', curlModule.connect.callCount);
 
