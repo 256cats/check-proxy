@@ -1,6 +1,6 @@
 {
   "name": "check-proxy",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Advanced Node proxy checker with socks and https support",
   "main": "index.js",
 
@@ -17,6 +17,10 @@
     "check proxy",
     "test proxy"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/256cats/check-proxy.git"
+  },
   "author": "Andrey E. <andrey@256cats.com> (256cats.com)",
   "licenses": [
     {
