@@ -21,8 +21,8 @@ Library consists of two parts - client and server. This allows to reliably check
 //client.js
 var checkProxy = require('check-proxy').check;
 checkProxy({
-	testHost: 'ping.rhcloud.com', // put your ping server url here
-	proxyIP: '107.151.152.218', // proxy ip to test
+  testHost: 'ping.rhcloud.com', // put your ping server url here
+  proxyIP: '107.151.152.218', // proxy ip to test
   proxyPort: 80, // proxy port to test
   localIP: '185.103.27.23', // local machine IP address to test
   websites: [
@@ -55,6 +55,29 @@ checkProxy({
 }, function(err) {
   console.log('proxy rejected', err);
 });
+//result
+/*
+[{
+  get: true,
+  post: true,
+  cookies: true,
+  referer: true,
+  'user-agent': true,
+  anonymityLevel: 1,
+  supportsHttps: true,
+  protocol: 'http',
+  ip: '107.151.152.218',
+  port: '80',
+  country: 'MX',
+  websites: {
+    example: true,
+    google: true,
+    amazon: true,
+    yandex: false
+  }
+}]
+*/
+
 ````
 
 ````javascript
@@ -94,27 +117,4 @@ app.listen(port, ipaddress, function() {
   console.log('%s: Node server started on %s:%d ...',
               Date(Date.now() ), ipaddress, port);
 });
-````
-
-````javascript
-//result
-[{
-  get: true,
-  post: true,
-  cookies: true,
-  referer: true,
-  'user-agent': true,
-  anonymityLevel: 1,
-  supportsHttps: true,
-  protocol: 'http',
-  ip: '107.151.152.218',
-  port: '80',
-  country: 'MX',
-  websites: {
-    example: true,
-    google: true,
-    amazon: true,
-    yandex: false
-  }
-}]
 ````
