@@ -5,10 +5,6 @@ var sinon = require('sinon');
 var curl = curlModule.connect();
 sinon.stub(curlModule, 'connect').returns(curl); // stub it, so connect() always returns the same instance
 var checkProxy = require('../index.js').check;
-//Promise.promisifyAll(curl);
-
-//console.log('called1', curlModule.connect.callCount);
-
 
 var exampleProxy = '201.173.226.94', examplePort = 10000, examplePingServer = 'pingserver.com', localIP = '192.168.1.1';
 
@@ -60,41 +56,35 @@ function generateStubs(post, get, workingProtocol, https, websites) {
     payload : JSON.stringify({"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1}),
     stats : {totalTime : 1000}
   };
-  ['http', 'https', 'socks4', 'socks5']
-  //['socks5']
-  .forEach(function(protocol) {
+  ['http', 'https', 'socks4', 'socks5'].forEach(function(protocol) {
     options = generateProxyRequestOptions(protocol);
 
     //stub post http post request
-    //console.log('"http://' + url + '"', options);
-
     post
       .withArgs('"http://' + url + '"', options)
       .yields(null,
-          //protocol ===  workingProtocol ? // if this is working protocol
           workingProtocol.indexOf(protocol) !== -1 ? // if this is working protocol
-          curlResult // return real JSON
-          : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
+            curlResult // return real JSON
+            : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
       );
 
     //stub post https post request
-    //console.log('https', protocol ===  workingProtocol && https);
+
     post
       .withArgs('"https://' + url + '"', options)
       .yields(null,
           workingProtocol.indexOf(protocol) !== -1 && https ? // if this is working protocol & https should be working
-          //protocol ===  workingProtocol && https ? // if this is working protocol & https should be working
-          curlResult // return real JSON
-          : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
+            curlResult // return real JSON
+            : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
       );
 
     //stub get requests for websites
     websites.forEach(function(w) {
-      //console.log('get stub', w.url, generateWebsiteRequestOptions(protocol));
       var websiteCurlResult = {
         payload : w.result,
         stats : {totalTime : 1000}
       };
+
       get
         .withArgs('"' + w.url + '"', generateWebsiteRequestOptions(protocol))
         .yields(null, websiteCurlResult) // each website passes desired result
@@ -108,13 +98,11 @@ describe('Check-proxy', function(){
   beforeEach(function() {
     this.get = sinon.stub(curl, 'get');
     this.post = sinon.stub(curl, 'post');
-
   });
 
   afterEach(function() {
     curl.get.restore();
     curl.post.restore();
-    //curlModule.connect.restore();
   });
 
   it('should return socks5 proxy with https support, no websites', function() {
@@ -130,8 +118,7 @@ describe('Check-proxy', function(){
       //websites: exampleWebsites
     })
     .then(function(result) {
-      //console.log('check result', result);
-      //console.log('post call count', curl.post.callCount);
+
       assert.deepEqual(result, [{
         get: true,
         post: true,
@@ -185,8 +172,6 @@ describe('Check-proxy', function(){
       websites: testWebsites
     })
     .then(function(result) {
-      //console.log('check result', result);
-      //console.log('post call count', curl.post.callCount);
       assert.deepEqual(result, [{
         get: true,
         post: true,
@@ -320,8 +305,6 @@ describe('Check-proxy', function(){
       websites: testWebsites
     })
     .then(function(result) {
-      //console.log('check result', result);
-      //console.log('post call count', curl.post.callCount);
       assert.deepEqual(result, [{
         get: true,
         post: true,
@@ -378,10 +361,7 @@ describe('Check-proxy', function(){
       websites: testWebsites
     })
     .then(function(result) {
-      //console.log('check result', result);
-      //console.log('post call count', curl.post.callCount);
       assert.equal(result,  "proxy checked, invalid");
-
     }, function(result) {
       assert.equal(result,  "proxy checked, invalid");
     });
