@@ -9,7 +9,7 @@ What it does:
  * checks GET, POST, COOKIES, referer support
  * checks https support
  * checks country
- * checks proxy speed
+ * checks proxy speed - provides total time and connect time
  * checks anonymity (binary checks - anonymous or not, 1 - anonymous, i.e. doesn't leak your IP address in any of the headers, 0 - not anonymous)
  * checks if proxy supports particular websites - by custom function, regex or substring search
  * allows to set connect timeout and overall timeout
@@ -82,6 +82,8 @@ checkProxy({
   ip: '107.151.152.218',
   port: '80',
   country: 'MX',
+  connectTime: 0.23, // Time in seconds it took to establish the connection
+  totalTime: 1.1, // Total transaction time in seconds for last the transfer
   websites: {
     example: true,
     google: true,

@@ -50,7 +50,7 @@ function generateStubs(curlGetStub, workingProtocol, https, websites) {
 
   var curlResult = {
     payload : JSON.stringify({"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1}),
-    stats : {totalTime : 1000}
+    stats : {totalTime : 1000, connectTime: 1000}
   };
   ['http', 'https', 'socks4', 'socks5'].forEach(function(protocol) {
     options = generateProxyRequestOptions(protocol);
@@ -122,6 +122,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: true,
         protocol: 'socks5',
         ip: exampleProxy,
@@ -176,6 +177,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: false,
         protocol: 'socks4',
         ip: exampleProxy,
@@ -247,6 +249,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: false,
         protocol: 'socks4',
         ip: exampleProxy,
@@ -308,6 +311,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: false,
         protocol: 'socks4',
         ip: exampleProxy,
@@ -326,6 +330,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: false,
         protocol: 'socks5',
         ip: exampleProxy,
@@ -383,6 +388,7 @@ describe('Check-proxy', function(){
         'user-agent': true,
         anonymityLevel: 1,
         totalTime: 1000,
+        connectTime: 1000,
         supportsHttps: true,
         protocol: 'http',
         ip: exampleProxy,
