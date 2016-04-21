@@ -1,51 +1,45 @@
+'use strict';
+var proxyquire = require('proxyquire');
 var Promise = require('bluebird');
-var curlModule = require('curling');
 var assert = require('assert');
 var sinon = require('sinon');
-var curl = curlModule.connect();
-sinon.stub(curlModule, 'connect').returns(curl); // stub it, so connect() always returns the same instance
-var checkProxy = require('../index.js').check;
+var curl = require('../lib/curl.js');
+
+var proxyQuireStub = {
+  '@noCallThru': true,
+};
+var checkProxy = proxyquire('../lib/check-proxy.js', {
+  './curl.js': proxyQuireStub
+});
 
 var exampleProxy = '201.173.226.94', examplePort = 10000, examplePingServer = 'pingserver.com', localIP = '192.168.1.1';
 
 function generateProxyRequestOptions(protocol) {
   return {
-      header: [
-        'User-Agent: Mozilla/4.0',
-        'Accept: text/html',
-        'Referer: http://www.google.com',
-        'Connection: close'
-      ],
-      'no-keepalive': null,
-      cookie: 'test=cookie;',
-      'connect-timeout': '6',
-      'max-time': '10',
-      k: null, // skip ssl errors
-      L: null, // follow location
-      data: ["test=post"],
-      proxy: protocol + '://' + exampleProxy + ':' + examplePort
-    }
+    header: [
+      'User-Agent: Mozilla/4.0',
+      'Accept: text/html',
+      'Referer: http://www.google.com',
+      'Connection: close'
+    ],
+    cookie: 'test=cookie;',
+    data: "test=post",
+    proxy: protocol + '://' + exampleProxy + ':' + examplePort
+  }
 }
 
 function generateWebsiteRequestOptions(protocol) {
   return {
-      header: [
-        'User-Agent: Mozilla/4.0',
-        'Accept: text/html',
-        'Connection: close'
-
-      ],
-      'no-keepalive': null,
-      //cookie: 'test=cookie;',
-      'connect-timeout': '6',
-      k: null, // skip ssl errors
-      L: null, // follow location
-      'max-time': '10',
-      proxy: protocol + '://' + exampleProxy + ':' + examplePort
-    }
+    header: [
+      'User-Agent: Mozilla/4.0',
+      'Accept: text/html',
+      'Connection: close'
+    ],
+    proxy: protocol + '://' + exampleProxy + ':' + examplePort
+  }
 }
 
-function generateStubs(post, get, workingProtocol, https, websites) {
+function generateStubs(curlGetStub, workingProtocol, https, websites) {
   workingProtocol = workingProtocol.constructor === Array ? workingProtocol : [workingProtocol];
   websites = websites || [];
   https = https || false;
@@ -60,23 +54,21 @@ function generateStubs(post, get, workingProtocol, https, websites) {
     options = generateProxyRequestOptions(protocol);
 
     //stub post http post request
-    post
-      .withArgs('"http://' + url + '"', options)
-      .yields(null,
+    curlGetStub
+      .withArgs('http://' + url, options)
+      .returns(Promise.resolve(
           workingProtocol.indexOf(protocol) !== -1 ? // if this is working protocol
             curlResult // return real JSON
             : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
-      );
+      ));
 
-    //stub post https post request
-
-    post
-      .withArgs('"https://' + url + '"', options)
-      .yields(null,
+    curlGetStub
+      .withArgs('https://' + url, options)
+      .returns(Promise.resolve(
           workingProtocol.indexOf(protocol) !== -1 && https ? // if this is working protocol & https should be working
             curlResult // return real JSON
             : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
-      );
+      ));
 
     //stub get requests for websites
     websites.forEach(function(w) {
@@ -85,9 +77,10 @@ function generateStubs(post, get, workingProtocol, https, websites) {
         stats : {totalTime : 1000}
       };
 
-      get
-        .withArgs('"' + w.url + '"', generateWebsiteRequestOptions(protocol))
-        .yields(null, websiteCurlResult) // each website passes desired result
+      var options = generateWebsiteRequestOptions(protocol);
+      curlGetStub
+        .withArgs(w.url, options)
+        .returns(Promise.resolve(websiteCurlResult)) // each website passes desired result
     });
   })
 
@@ -96,18 +89,16 @@ function generateStubs(post, get, workingProtocol, https, websites) {
 describe('Check-proxy', function(){
 
   beforeEach(function() {
-    this.get = sinon.stub(curl, 'get');
-    this.post = sinon.stub(curl, 'post');
+    this.get = proxyQuireStub.get = sinon.stub(curl, 'get');
   });
 
   afterEach(function() {
     curl.get.restore();
-    curl.post.restore();
   });
 
   it('should return socks5 proxy with https support, no websites', function() {
 
-    generateStubs(this.post, this.get, 'socks5', true);
+    generateStubs(this.get, 'socks5', true);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -115,7 +106,7 @@ describe('Check-proxy', function(){
       proxyPort: examplePort,
       localIP: '192.168.1.1',
       timeout: 25000,
-      //websites: exampleWebsites
+
     })
     .then(function(result) {
 
@@ -161,7 +152,7 @@ describe('Check-proxy', function(){
         result: 'no data' // result to be provided by stub
       }
     ];
-    generateStubs(this.post, this.get, 'socks4', false, testWebsites);
+    generateStubs(this.get, 'socks4', false, testWebsites);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -218,7 +209,7 @@ describe('Check-proxy', function(){
         result: 'no data' // result to be provided by stub
       }
     ];
-    generateStubs(this.post, this.get, ['socks4', 'socks5'], false, testWebsites);
+    generateStubs(this.get, ['socks4', 'socks5'], false, testWebsites);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -229,8 +220,7 @@ describe('Check-proxy', function(){
       websites: testWebsites
     })
     .then(function(result) {
-      //console.log('check result', result);
-      //console.log('post call count', curl.post.callCount);
+
       assert.deepEqual(result, [{
         get: true,
         post: true,
@@ -294,7 +284,7 @@ describe('Check-proxy', function(){
         result: 'no data' // result to be provided by stub
       }
     ];
-    generateStubs(this.post, this.get, 'http', true, testWebsites);
+    generateStubs(this.get, 'http', true, testWebsites);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -350,7 +340,7 @@ describe('Check-proxy', function(){
         result: 'no data' // result to be provided by stub
       }
     ];
-    generateStubs(this.post, this.get, '', true, testWebsites);
+    generateStubs(this.get, '', true, testWebsites);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -367,10 +357,5 @@ describe('Check-proxy', function(){
     });
 
   });
-
-  after(function() {
-    curlModule.connect.restore();
-  });
-
 
 });

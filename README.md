@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/256cats/check-proxy.svg?branch=master)](https://travis-ci.org/256cats/check-proxy)
+[![Coverage Status](https://travis-ci.org/256cats/check-proxy/badge.svg)](https://travis-ci.org/256cats/check-proxy)
 # Check-proxy - Advanced Node proxy testing library
 
 This is an advanced proxy checking library. Requires curl.
@@ -13,11 +15,12 @@ What it does:
 
 It will return a promise that is either fulfilled with array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect on provided port.
 
-TODO:
+
+## TODO
  * check proxy speed
  * add custom callbacks for website checks
 
- ## Installation
+## Installation
 
   npm install check-proxy --save
 

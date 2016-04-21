@@ -3,15 +3,15 @@
   "version": "0.0.4",
   "description": "Advanced Node proxy checker with socks and https support",
   "main": "index.js",
-
   "dependencies": {
     "bluebird": "^3.1.1",
-    "lodash": "~3.7.0",
+    "curling": "^0.3.0",
     "geoip-ultralight": "^0.1.1",
-    "curling": "^0.3.0"
+    "lodash": "~3.7.0",
+    "proxyquire": "^1.7.4"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 5000"
   },
   "keywords": [
     "check proxy",
