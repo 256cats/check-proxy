@@ -4,6 +4,8 @@ checkProxy({
 	proxyIP: '107.151.152.218', // proxy ip to test
   proxyPort: 80, // proxy port to test
   localIP: '185.103.27.23', // local machine ip to test
+  connectTimeout: 6, // curl connect timeout, sec
+  timeout: 10, // curl timeout, sec
   websites: [
     {
       name: 'example',
@@ -20,12 +22,14 @@ checkProxy({
     {
       name: 'google',
       url: 'http://www.google.com/',
-      regex: /google/gim, // expected result
+      regex: function(html) { // expected result - custom function
+        return html && html.indexOf('google') != -1;
+      },
     },
     {
       name: 'amazon',
       url: 'http://www.amazon.com/',
-      regex: /amazon/gim, // expected result
+      regex: 'Amazon', // expected result - look for this string in the output
     },
 
   ]

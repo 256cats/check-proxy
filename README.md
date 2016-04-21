@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/256cats/check-proxy.svg?branch=master)](https://travis-ci.org/256cats/check-proxy)
-[![Coverage Status](https://travis-ci.org/256cats/check-proxy/badge.svg)](https://travis-ci.org/256cats/check-proxy)
 # Check-proxy - Advanced Node proxy testing library
 
 This is an advanced proxy checking library. Requires curl.
@@ -10,15 +9,11 @@ What it does:
  * checks GET, POST, COOKIES, referer support
  * checks https support
  * checks country
- * checks anonymity (binary checks - anonymous or not)
- * checks if proxy supports particular websites
+ * checks proxy speed
+ * checks anonymity (binary checks - anonymous or not, 1 - anonymous, i.e. doesn't leak your IP address in any of the headers, 0 - not anonymous)
+ * checks if proxy supports particular websites - by custom function, regex or substring search
 
 It will return a promise that is either fulfilled with array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect on provided port.
-
-
-## TODO
- * check proxy speed
- * add custom callbacks for website checks
 
 ## Installation
 
@@ -37,28 +32,32 @@ checkProxy({
   proxyIP: '107.151.152.218', // proxy ip to test
   proxyPort: 80, // proxy port to test
   localIP: '185.103.27.23', // local machine IP address to test
+  connectTimeout: 6, // curl connect timeout, sec
+  timeout: 10, // curl timeout, sec
   websites: [
     {
       name: 'example',
       url: 'http://www.example.com/',
-      regex: /example/gim, // expected result
+      regex: /example/gim, // expected result - regex
 
     },
     {
       name: 'yandex',
       url: 'http://www.yandex.ru/',
-      regex: /yandex/gim, // expected result
+      regex: /yandex/gim, // expected result - regex
 
     },
     {
       name: 'google',
       url: 'http://www.google.com/',
-      regex: /google/gim, // expected result
+      regex: function(html) { // expected result - custom function
+        return html && html.indexOf('google') != -1;
+      },
     },
     {
       name: 'amazon',
       url: 'http://www.amazon.com/',
-      regex: /amazon/gim, // expected result
+      regex: 'Amazon', // expected result - look for this string in the output
     },
 
   ]

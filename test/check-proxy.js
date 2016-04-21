@@ -24,6 +24,8 @@ function generateProxyRequestOptions(protocol) {
     ],
     cookie: 'test=cookie;',
     data: "test=post",
+    timeout: 100,
+    connectTimeout: 50,
     proxy: protocol + '://' + exampleProxy + ':' + examplePort
   }
 }
@@ -90,6 +92,7 @@ describe('Check-proxy', function(){
 
   beforeEach(function() {
     this.get = proxyQuireStub.get = sinon.stub(curl, 'get');
+    //console.log(this.get);
   });
 
   afterEach(function() {
@@ -105,7 +108,8 @@ describe('Check-proxy', function(){
       proxyIP: exampleProxy,
       proxyPort: examplePort,
       localIP: '192.168.1.1',
-      timeout: 25000,
+      timeout: 100,
+      connectTimeout: 50
 
     })
     .then(function(result) {
@@ -117,7 +121,7 @@ describe('Check-proxy', function(){
         referer: true,
         'user-agent': true,
         anonymityLevel: 1,
-        elapsedTime: 1000,
+        totalTime: 1000,
         supportsHttps: true,
         protocol: 'socks5',
         ip: exampleProxy,
@@ -159,7 +163,8 @@ describe('Check-proxy', function(){
       proxyIP: exampleProxy,
       proxyPort: examplePort,
       localIP: '192.168.1.1',
-      timeout: 25000,
+      timeout: 100,
+      connectTimeout: 50,
       websites: testWebsites
     })
     .then(function(result) {
@@ -170,7 +175,7 @@ describe('Check-proxy', function(){
         referer: true,
         'user-agent': true,
         anonymityLevel: 1,
-        elapsedTime: 1000,
+        totalTime: 1000,
         supportsHttps: false,
         protocol: 'socks4',
         ip: exampleProxy,
@@ -180,6 +185,79 @@ describe('Check-proxy', function(){
           test1: true,
           test2: true,
           test3: false,
+        }
+      }]);
+
+    });
+
+  });
+
+  it('should return socks4 proxy without https support, "test1", "test2" websites working, "test3" working, "test4",test5 not working, one regex, one function, one substring search, one regex not set', function() {
+    var testWebsites = [
+      {
+        name: 'test1',
+        url: 'http://www.example.com',
+        regex: /ok/, // expected result - regex
+        result: 'ok' // result to be provided by stub
+      },
+      {
+        name: 'test2',
+        url: 'http://www.yandex.ru',
+        regex: function(html) { // expected result - function
+          return html.indexOf('ok') != -1
+        },
+        result: 'ok' // result to be provided by stub
+      },
+      {
+        name: 'test3',
+        url: 'http://www.notok.com',
+        regex: 'ok', // expected result- string
+        result: 'no okdata' // result to be provided by stub
+      },
+      {
+        name: 'test4',
+        url: 'http://www.notok.com',
+
+        result: 'no okdata' // result to be provided by stub
+      },
+      {
+        name: 'test5',
+        url: 'http://www.notok.com',
+        regex: 'substring',
+        result: 'no okdata' // result to be provided by stub
+      }
+    ];
+    generateStubs(this.get, 'socks4', false, testWebsites);
+
+    return checkProxy({
+      testHost: examplePingServer,
+      proxyIP: exampleProxy,
+      proxyPort: examplePort,
+      localIP: '192.168.1.1',
+      timeout: 100,
+      connectTimeout: 50,
+      websites: testWebsites
+    })
+    .then(function(result) {
+      assert.deepEqual(result, [{
+        get: true,
+        post: true,
+        cookies: true,
+        referer: true,
+        'user-agent': true,
+        anonymityLevel: 1,
+        totalTime: 1000,
+        supportsHttps: false,
+        protocol: 'socks4',
+        ip: exampleProxy,
+        port: examplePort,
+        country: 'MX',
+        websites: {
+          test1: true,
+          test2: true,
+          test3: true,
+          test4: false,
+          test5: false
         }
       }]);
 
@@ -216,7 +294,8 @@ describe('Check-proxy', function(){
       proxyIP: exampleProxy,
       proxyPort: examplePort,
       localIP: '192.168.1.1',
-      timeout: 25000,
+      timeout: 100,
+      connectTimeout: 50,
       websites: testWebsites
     })
     .then(function(result) {
@@ -228,7 +307,7 @@ describe('Check-proxy', function(){
         referer: true,
         'user-agent': true,
         anonymityLevel: 1,
-        elapsedTime: 1000,
+        totalTime: 1000,
         supportsHttps: false,
         protocol: 'socks4',
         ip: exampleProxy,
@@ -246,7 +325,7 @@ describe('Check-proxy', function(){
         referer: true,
         'user-agent': true,
         anonymityLevel: 1,
-        elapsedTime: 1000,
+        totalTime: 1000,
         supportsHttps: false,
         protocol: 'socks5',
         ip: exampleProxy,
@@ -291,7 +370,8 @@ describe('Check-proxy', function(){
       proxyIP: exampleProxy,
       proxyPort: examplePort,
       localIP: '192.168.1.1',
-      timeout: 25000,
+      timeout: 100,
+      connectTimeout: 50,
       websites: testWebsites
     })
     .then(function(result) {
@@ -302,7 +382,7 @@ describe('Check-proxy', function(){
         referer: true,
         'user-agent': true,
         anonymityLevel: 1,
-        elapsedTime: 1000,
+        totalTime: 1000,
         supportsHttps: true,
         protocol: 'http',
         ip: exampleProxy,
@@ -347,7 +427,8 @@ describe('Check-proxy', function(){
       proxyIP: exampleProxy,
       proxyPort: examplePort,
       localIP: '192.168.1.1',
-      timeout: 25000,
+      timeout: 100,
+      connectTimeout: 50,
       websites: testWebsites
     })
     .then(function(result) {
