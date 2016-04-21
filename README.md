@@ -12,17 +12,19 @@ What it does:
  * checks proxy speed
  * checks anonymity (binary checks - anonymous or not, 1 - anonymous, i.e. doesn't leak your IP address in any of the headers, 0 - not anonymous)
  * checks if proxy supports particular websites - by custom function, regex or substring search
+ * allows to set connect timeout and overall timeout
 
 It will return a promise that is either fulfilled with array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect on provided port.
 
 ## Installation
 
+````javascript
   npm install check-proxy --save
-
+````
 
 ## Usage
 
-Library consists of two parts - client and server. This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for OpenShift server app. Websites are checked against specified regex.
+Library consists of two parts - client and server. This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for OpenShift server app. Websites are checked against specified function, regex or string.
 
 ````javascript
 //client.js
