@@ -137,7 +137,3 @@ app.listen(port, ipaddress, function() {
 ## Tests
 
   npm test
-
-## Release History
-
-* 0.0.3 Initial release
