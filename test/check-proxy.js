@@ -169,6 +169,7 @@ describe('Check-proxy', function(){
       websites: testWebsites
     })
     .then(function(result) {
+      
       assert.deepEqual(result, [{
         get: true,
         post: true,
@@ -184,8 +185,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: true,
-          test2: true,
+          test1: {"totalTime": 1000},
+          test2: {"totalTime": 1000},
           test3: false,
         }
       }]);
@@ -256,9 +257,9 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: true,
-          test2: true,
-          test3: true,
+          test1: {"totalTime": 1000},
+          test2: {"totalTime": 1000},
+          test3: {"totalTime": 1000},
           test4: false,
           test5: false
         }
@@ -318,8 +319,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: true,
-          test2: true,
+          test1: {"totalTime": 1000},
+          test2: {"totalTime": 1000},
           test3: false,
         }
       }, {
@@ -337,8 +338,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: true,
-          test2: true,
+          test1: {"totalTime": 1000},
+          test2: {"totalTime": 1000},
           test3: false,
         }
       }]);
