@@ -26,7 +26,8 @@ function generateProxyRequestOptions(protocol) {
     data: "test=post",
     timeout: 100,
     connectTimeout: 50,
-    proxy: protocol + '://' + exampleProxy + ':' + examplePort
+    proxy: protocol + '://' + exampleProxy + ':' + examplePort,
+    //ignoreErrors: true
   }
 }
 
@@ -37,7 +38,8 @@ function generateWebsiteRequestOptions(protocol) {
       'Accept: text/html',
       'Connection: close'
     ],
-    proxy: protocol + '://' + exampleProxy + ':' + examplePort
+    proxy: protocol + '://' + exampleProxy + ':' + examplePort,
+    ignoreErrors: true
   }
 }
 
@@ -50,8 +52,14 @@ function generateStubs(curlGetStub, workingProtocol, https, websites) {
 
   var curlResult = {
     payload : JSON.stringify({"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1}),
-    stats : {totalTime : 1000, connectTime: 1000}
+    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
   };
+
+  var curlEmptyResult = {
+    payload : '<html>proxy is not available</html>',
+    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
+  };
+
   ['http', 'https', 'socks4', 'socks5'].forEach(function(protocol) {
     options = generateProxyRequestOptions(protocol);
 
@@ -61,7 +69,7 @@ function generateStubs(curlGetStub, workingProtocol, https, websites) {
       .returns(Promise.resolve(
           workingProtocol.indexOf(protocol) !== -1 ? // if this is working protocol
             curlResult // return real JSON
-            : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
+            : curlEmptyResult // otherwise return html which won't be parsed
       ));
 
     curlGetStub
@@ -69,14 +77,14 @@ function generateStubs(curlGetStub, workingProtocol, https, websites) {
       .returns(Promise.resolve(
           workingProtocol.indexOf(protocol) !== -1 && https ? // if this is working protocol & https should be working
             curlResult // return real JSON
-            : '<html>proxy is not available</html>' // otherwise return html which won't be parsed
+            : curlEmptyResult // otherwise return html which won't be parsed
       ));
 
     //stub get requests for websites
     websites.forEach(function(w) {
       var websiteCurlResult = {
         payload : w.result,
-        stats : {totalTime : 1000}
+        stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
       };
 
       var options = generateWebsiteRequestOptions(protocol);
@@ -92,7 +100,6 @@ describe('Check-proxy', function(){
 
   beforeEach(function() {
     this.get = proxyQuireStub.get = sinon.stub(curl, 'get');
-    //console.log(this.get);
   });
 
   afterEach(function() {
@@ -185,8 +192,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: {"totalTime": 1000},
-          test2: {"totalTime": 1000},
+          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
           test3: false,
         }
       }]);
@@ -257,9 +264,9 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: {"totalTime": 1000},
-          test2: {"totalTime": 1000},
-          test3: {"totalTime": 1000},
+          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+          test3: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
           test4: false,
           test5: false
         }
@@ -319,8 +326,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: {"totalTime": 1000},
-          test2: {"totalTime": 1000},
+          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
           test3: false,
         }
       }, {
@@ -338,8 +345,8 @@ describe('Check-proxy', function(){
         port: examplePort,
         country: 'MX',
         websites: {
-          test1: {"totalTime": 1000},
-          test2: {"totalTime": 1000},
+          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
           test3: false,
         }
       }]);
