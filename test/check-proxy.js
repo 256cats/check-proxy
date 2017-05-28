@@ -52,12 +52,14 @@ function generateStubs(curlGetStub, workingProtocol, https, websites) {
 
   var curlResult = {
     payload : JSON.stringify({"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1}),
-    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
+    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+    success: true
   };
 
   var curlEmptyResult = {
     payload : '<html>proxy is not available</html>',
-    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
+    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
+    success: false
   };
 
   ['http', 'https', 'socks4', 'socks5'].forEach(function(protocol) {
