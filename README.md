@@ -1,9 +1,10 @@
 [![Build Status](https://travis-ci.org/256cats/check-proxy.svg?branch=master)](https://travis-ci.org/256cats/check-proxy)
 # Check-proxy - Advanced Node proxy testing library
 
-This is an advanced proxy checking library. Requires curl.
+This is an advanced proxy checking library that powers [https://gimmeproxy.com](https://gimmeproxy.com)
 
 What it does:
+
  * checks http, socks4 and socks5 proxies
  * performs actual requests, not just pings
  * checks GET, POST, COOKIES, referer support
@@ -14,7 +15,7 @@ What it does:
  * checks if proxy supports particular websites - by custom function, regex or substring search
  * allows to set connect timeout and overall timeout
 
-It will return a promise that is either fulfilled with array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect on provided port.
+It will return a promise that is either fulfilled with an array of working proxies and protocols (some proxies support SOCKS4/SOCKS5 on the same port) or rejected if it wasn't able to connect to provided port.
 
 ## Installation
 
@@ -24,11 +25,16 @@ It will return a promise that is either fulfilled with array of working proxies 
 
 ## Usage
 
-Library consists of two parts - client and server. This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for OpenShift server app. Websites are checked against specified function, regex or string.
+Library consists of two parts - client and server. Server runs on a known IP address and client tries to connect to server through proxy you provide. 
+
+This allows to reliably check proxy parameters like GET, POST, COOKIES support. See example directory for server app. 
+
+Additionally it's possible to check if particular websites are working through this proxy. Websites are checked against specified function, regex or string.
 
 ````javascript
+
 //client.js
-var checkProxy = require('check-proxy').check;
+const checkProxy = require('check-proxy').check;
 checkProxy({
   testHost: 'ping.rhcloud.com', // put your ping server url here
   proxyIP: '107.151.152.218', // proxy ip to test
@@ -80,14 +86,26 @@ checkProxy({
   supportsHttps: true,
   protocol: 'http',
   ip: '107.151.152.218',
-  port: '80',
+  port: 80,
   country: 'MX',
   connectTime: 0.23, // Time in seconds it took to establish the connection
   totalTime: 1.1, // Total transaction time in seconds for last the transfer
   websites: {
-    example: true,
-    google: true,
-    amazon: true,
+    example: {
+      "responseCode": 200,
+      "connectTime": 0.648131, // seconds
+      "totalTime": 0.890804, // seconds
+      "receivedLength": 1270, // bytes
+      "averageSpeed": 1425 // bytes per second
+    },
+    google: {
+      "responseCode": 200,
+      "connectTime": 0.648131, // seconds
+      "totalTime": 0.890804, // seconds
+      "receivedLength": 1270, // bytes
+      "averageSpeed": 1425 // bytes per second
+    },
+    amazon: false,
     yandex: false
   }
 }]
@@ -97,18 +115,18 @@ checkProxy({
 
 ````javascript
 //server.js
-var express = require('express'),
-    app = express(),
-    url = require('url'),
-    bodyParser = require('body-parser'),
-    cookieParser = require('cookie-parser'),
-    getProxyType = require('check-proxy').ping;
+const express = require('express'),
+  app = express(),
+  url = require('url'),
+  bodyParser = require('body-parser'),
+  cookieParser = require('cookie-parser'),
+  getProxyType = require('check-proxy').ping;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-var ping = function(req, res) {
+const ping = function(req, res) {
   console.log('ip', req.connection.remoteAddress);
   console.log('headers', req.headers);
 	console.log('cookies', req.cookies);
@@ -118,14 +136,14 @@ var ping = function(req, res) {
 app.get('/', ping);
 app.post('/', ping);
 
-var ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+const ipaddress = process.env.OPENSHIFT_NODEJS_IP;
+const port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
 if (typeof ipaddress === "undefined") {
-    //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
-    //  allows us to run/test the app locally.
-    console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
-    ipaddress = "127.0.0.1";
+  //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
+  //  allows us to run/test the app locally.
+  console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
+  ipaddress = "127.0.0.1";
 };
 
 app.listen(port, ipaddress, function() {
@@ -136,4 +154,8 @@ app.listen(port, ipaddress, function() {
 
 ## Tests
 
-  npm test
+  npm run test
+
+## News
+
+August 2017 - full rewrite in Typescript, readability and speed improvements.

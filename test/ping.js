@@ -1,7 +1,7 @@
 'use strict';
 var assert = require('assert');
 var sinon = require('sinon');
-var ping = require('../index.js').ping;
+var ping = require('../build/index.js').ping;
 
 describe('Ping', function(){
   it('should return all false', function(){

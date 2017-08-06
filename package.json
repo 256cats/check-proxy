@@ -1,17 +1,19 @@
 {
   "name": "check-proxy",
-  "version": "0.1.3",
+  "version": "0.2.1",
   "description": "Advanced Node proxy checker with socks and https support",
-  "main": "index.js",
+  "main": "build/index.js",
   "dependencies": {
     "bluebird": ">=3.1.1",
-    "geoip-ultralight": ">=0.1.1",
-    "lodash": ">=3.7.0",
-    "node-libcurl": ">=0.9.0",
-    "proxyquire": ">=1.7.4"
+    "geoip-ultralight": "0.1.5",
+    "lodash": "4.17.4",
+    "node-libcurl": "https://github.com/256cats/node-libcurl#develop",
+    "typescript": "2.4.2"
   },
   "scripts": {
-    "test": "mocha --timeout 5000"
+    "test": "npm run build && mocha --timeout 5000",
+    "postinstall": "npm run build",
+    "build": "rm -rf ./build && ./node_modules/.bin/tsc && cp ./lib/interfaces.d.ts ./build/lib/interfaces.d.ts"
   },
   "keywords": [
     "check proxy",
@@ -22,6 +24,7 @@
     "url": "git+https://github.com/256cats/check-proxy.git"
   },
   "author": "Andrey E. <andrey@256cats.com> (256cats.com)",
+  "engines" : { "node" : ">=6.0.0" },
   "licenses": [
     {
       "type": "MIT",
@@ -29,7 +32,10 @@
     }
   ],
   "devDependencies": {
+    "@types/node": "8.0.19",
+    "tslib": "1.7.1",
     "sinon": "^1.17.3",
-    "mocha": "*"
+    "mocha": "*",
+    "proxyquire": ">=1.7.4"
   }
 }

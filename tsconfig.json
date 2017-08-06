@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": [
+      "es6",
+      "es7",
+      "es2015"
+    ],
+    "declaration": true,
+    "noLib": false,
+    "moduleResolution": "Node",
+    "sourceMap": false,
+    "removeComments": true,
+    "outDir": "./build",
+    "rootDir": ".",
+    "importHelpers": true,
+    "noImplicitAny": false
+  },
+  "compileOnSave": false,
+  "filesGlob": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "./src",
+    "./bak",
+    "ts-node-cache"
+  ],
+  "atom": {
+    "rewriteTsconfig": true
+  }
+}
