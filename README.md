@@ -154,7 +154,7 @@ app.listen(port, ipaddress, function() {
 
 ## Tests
 
-  npm run test
+    npm run test
 
 ## News
 
