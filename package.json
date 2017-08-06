@@ -24,6 +24,7 @@
     "url": "git+https://github.com/256cats/check-proxy.git"
   },
   "author": "Andrey E. <andrey@256cats.com> (256cats.com)",
+  "engines" : { "node" : ">=6.0.0" },
   "licenses": [
     {
       "type": "MIT",
