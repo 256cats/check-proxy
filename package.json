@@ -1,12 +1,13 @@
 {
   "name": "check-proxy",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Advanced Node proxy checker with socks and https support",
   "main": "build/index.js",
   "dependencies": {
     "bluebird": ">=3.1.1",
     "geoip-ultralight": "0.1.5",
     "lodash": "4.17.4",
+    "tslib": "1.7.1",
     "node-libcurl": "https://github.com/256cats/node-libcurl#develop"
   },
   "scripts": {
@@ -31,7 +32,6 @@
   ],
   "devDependencies": {
     "@types/node": "8.0.19",
-    "tslib": "1.7.1",
     "sinon": "^1.17.3",
     "mocha": "*",
     "proxyquire": ">=1.7.4",
