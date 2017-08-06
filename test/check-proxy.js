@@ -3,14 +3,14 @@ var proxyquire = require('proxyquire');
 var Promise = require('bluebird');
 var assert = require('assert');
 var sinon = require('sinon');
-var curl = require('../lib/curl.js');
+var curl = require('../build/lib/curl.js');
 
 var proxyQuireStub = {
   '@noCallThru': true,
 };
-var checkProxy = proxyquire('../lib/check-proxy.js', {
+var checkProxy = proxyquire('../build/lib/check-proxy.js', {
   './curl.js': proxyQuireStub
-});
+}).default;
 
 var exampleProxy = '201.173.226.94', examplePort = 10000, examplePingServer = 'pingserver.com', localIP = '192.168.1.1';
 
@@ -279,7 +279,7 @@ describe('Check-proxy', function(){
   });
 
 
-  it('should return array with socks4 and socks5 proxies without https support, "test1", "test2" websites working, "test3" not working', function() {
+  it('should return array with only socks5 proxies without https support, "test1", "test2" websites working, "test3" not working', function() {
     var testWebsites = [
       {
         name: 'test1',
@@ -300,7 +300,7 @@ describe('Check-proxy', function(){
         result: 'no data' // result to be provided by stub
       }
     ];
-    generateStubs(this.get, ['socks4', 'socks5'], false, testWebsites);
+    generateStubs(this.get, 'socks5', false, testWebsites);
 
     return checkProxy({
       testHost: examplePingServer,
@@ -314,25 +314,6 @@ describe('Check-proxy', function(){
     .then(function(result) {
 
       assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: false,
-        protocol: 'socks4',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {
-          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test3: false,
-        }
-      }, {
         get: true,
         post: true,
         cookies: true,
