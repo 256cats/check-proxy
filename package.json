@@ -8,7 +8,7 @@
     "geoip-ultralight": "0.1.5",
     "lodash": "4.17.4",
     "tslib": "1.7.1",
-    "node-libcurl": "https://github.com/256cats/node-libcurl#develop"
+    "node-libcurl": "1.3.0"
   },
   "scripts": {
     "test": "mocha --timeout 5000",
