@@ -15,14 +15,14 @@ import {
   EProxyProtocol,
   EWebsiteProtocol
 } from './enums'
-import { get } from './curl.js'
+import { get } from './request.js'
 
-const pingThroughProxy = async (url: string, options: IGetOptions): Promise<IGetResolve> => {
+async function pingThroughProxy(url: string, options: IGetOptions): Promise<IGetResolve> {
   try {
     const result = await get(url, options)
     
     if(!result.success) {
-      throw 'Request failed'
+      throw new Error('Request failed')
     }
 
     const proxyData: any = JSON.parse(result.payload || '')
@@ -35,31 +35,34 @@ const pingThroughProxy = async (url: string, options: IGetOptions): Promise<IGet
   }
 }
 
-const createPingRequestOptions = (options: ICheckProxyOptions, proxyProtocol: EProxyProtocol, websiteProtocol: EWebsiteProtocol): IPingOptions => ({
-  url: websiteProtocol + '://' + options.testHost + '/?test=get&ip=' + options.localIP,
-  options: {
-    header: [
-      'User-Agent: Mozilla/4.0',
-      'Accept: text/html',
-      'Referer: http://www.google.com',
-      'Connection: close'
-    ],
-    cookie: 'test=cookie;',
-    data: "test=post",
-    proxy: proxyProtocol + '://' + options.proxyIP + ':' + options.proxyPort,
-    timeout: options.timeout,
-    connectTimeout: options.connectTimeout
+function createPingRequestOptions(options: ICheckProxyOptions, proxyProtocol: EProxyProtocol, websiteProtocol: EWebsiteProtocol): IPingOptions { 
+  return {
+    url: `${websiteProtocol}://${options.testHost}/?test=get&ip=${options.localIP}`,
+    options: {
+      headers: {
+        'User-Agent': 'Mozilla/4.0',
+        Accept: 'text/html',
+        Referer: 'http://www.google.com',
+        Connection: 'close'
+      },
+      cookie: 'test=cookie;',
+      data: { test: 'post'},
+      proxy: `${proxyProtocol}://${options.proxyIP}:${options.proxyPort}`,
+      timeout: options.timeout,
+      connectTimeout: options.connectTimeout
+    }
   }
-})
+}
 
 async function testWebsite(url: string, proxy: string, regex: any, website: ICheckProxyWebsite): Promise<IGetResolveStats> {
   const options: IGetOptions = {
-    header: [
-      'User-Agent: Mozilla/4.0',
-      'Accept: text/html',
-      'Connection: close'
-    ],
-    proxy: proxy,
+    headers: {
+      'User-Agent': 'Mozilla/4.0',
+      Accept: 'text/html',
+      Referer: 'http://www.google.com',
+      Connection: 'close'
+    },
+    proxy,
     ignoreErrors: true
   }
 
@@ -76,11 +79,11 @@ async function testWebsite(url: string, proxy: string, regex: any, website: IChe
   
   if(regex) {
     if(_.isFunction(regex)) {
-      return regex(html, result) ? result.stats : Promise.reject('data doesn\'t match provided function')
+      return regex(html, result) ? result.stats : Promise.reject(new Error('data doesn\'t match provided function'))
     } else if(_.isRegExp(regex)) {
-      return regex.test(html) ? result.stats : Promise.reject('data doesn\'t match provided regex')
+      return regex.test(html) ? result.stats : Promise.reject(new Error('data doesn\'t match provided regex'))
     } else {
-      return html.indexOf(regex) != -1 ? result.stats : Promise.reject('data doesn\'t contain provided string')
+      return html.indexOf(regex) != -1 ? result.stats : Promise.reject(new Error('data doesn\'t contain provided string'))
     }
   }
   
@@ -104,7 +107,7 @@ async function testProtocol(proxyProtocol: EProxyProtocol, options: ICheckProxyO
   const httpOptions = createPingRequestOptions(options, proxyProtocol, EWebsiteProtocol.http)
   const httpResult = await pingThroughProxy(httpOptions.url, httpOptions.options)
 
-  const result: ITestProtocolResult = Object.assign({
+  let result: ITestProtocolResult = Object.assign({
     supportsHttps: false,
     protocol: proxyProtocol,
     ip: options.proxyIP,
@@ -113,7 +116,8 @@ async function testProtocol(proxyProtocol: EProxyProtocol, options: ICheckProxyO
   
   try { // check https after http
     const httpsOptions = createPingRequestOptions(options, proxyProtocol, EWebsiteProtocol.https)
-    const resHttps = await pingThroughProxy(httpsOptions.url, httpsOptions.options)
+    const httpsResult = await pingThroughProxy(httpsOptions.url, httpsOptions.options)
+    Object.assign(result, httpsResult)
     result.supportsHttps = true
   } catch(err) {}
 

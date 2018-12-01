@@ -1,29 +1,28 @@
 'use strict';
 var proxyquire = require('proxyquire');
-var Promise = require('bluebird');
 var assert = require('assert');
 var sinon = require('sinon');
-var curl = require('../build/lib/curl.js');
+var curl = require('../build/lib/request.js');
 
 var proxyQuireStub = {
   '@noCallThru': true,
 };
 var checkProxy = proxyquire('../build/lib/check-proxy.js', {
-  './curl.js': proxyQuireStub
+  './request.js': proxyQuireStub
 }).default;
 
 var exampleProxy = '201.173.226.94', examplePort = 10000, examplePingServer = 'pingserver.com', localIP = '192.168.1.1';
 
 function generateProxyRequestOptions(protocol) {
   return {
-    header: [
-      'User-Agent: Mozilla/4.0',
-      'Accept: text/html',
-      'Referer: http://www.google.com',
-      'Connection: close'
-    ],
+    headers: {
+      'User-Agent': 'Mozilla/4.0',
+      Accept: 'text/html',
+      Referer: 'http://www.google.com',
+      Connection: 'close'
+    },
     cookie: 'test=cookie;',
-    data: "test=post",
+    data: { test: 'post'},
     timeout: 100,
     connectTimeout: 50,
     proxy: protocol + '://' + exampleProxy + ':' + examplePort,
@@ -33,11 +32,12 @@ function generateProxyRequestOptions(protocol) {
 
 function generateWebsiteRequestOptions(protocol) {
   return {
-    header: [
-      'User-Agent: Mozilla/4.0',
-      'Accept: text/html',
-      'Connection: close'
-    ],
+    headers: {
+      'User-Agent': 'Mozilla/4.0',
+      Accept: 'text/html',
+      Referer: 'http://www.google.com',
+      Connection: 'close'
+    },
     proxy: protocol + '://' + exampleProxy + ':' + examplePort,
     ignoreErrors: true
   }

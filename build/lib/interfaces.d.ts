@@ -4,10 +4,10 @@ import {
 } from './enums'
 
 export interface IGetOptions {
-  header?: Array<string>;
+  headers?: {[index: string]: string};
   cookie?: string;
   proxy?: string;
-  data?: string;
+  data?: {[index: string]: string};
   connectTimeout?: number;
   timeout?: number;
   ignoreErrors?: boolean;
@@ -19,6 +19,7 @@ export interface IGetResolveStats {
   totalTime: number; // seconds
   receivedLength: number; // bytes
   averageSpeed: number; // bytes per second
+  firstByte?: number;
 }
 
 export interface IGetResolve {

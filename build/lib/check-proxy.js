@@ -1,50 +1,53 @@
 'use strict';
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var geoip = require("geoip-ultralight");
 var _ = require("lodash");
 var enums_1 = require("./enums");
-var curl_js_1 = require("./curl.js");
-var pingThroughProxy = function (url, options) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-    var result, proxyData, err_1;
-    return tslib_1.__generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4, curl_js_1.get(url, options)];
-            case 1:
-                result = _a.sent();
-                if (!result.success) {
-                    throw 'Request failed';
-                }
-                proxyData = JSON.parse(result.payload || '');
-                proxyData.totalTime = result.stats.totalTime;
-                proxyData.connectTime = result.stats.connectTime;
-                return [2, proxyData];
-            case 2:
-                err_1 = _a.sent();
-                return [2, Promise.reject(err_1)];
-            case 3: return [2];
-        }
+var request_js_1 = require("./request.js");
+function pingThroughProxy(url, options) {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
+        var result, proxyData, err_1;
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4, request_js_1.get(url, options)];
+                case 1:
+                    result = _a.sent();
+                    if (!result.success) {
+                        throw new Error('Request failed');
+                    }
+                    proxyData = JSON.parse(result.payload || '');
+                    proxyData.totalTime = result.stats.totalTime;
+                    proxyData.connectTime = result.stats.connectTime;
+                    return [2, proxyData];
+                case 2:
+                    err_1 = _a.sent();
+                    return [2, Promise.reject(err_1)];
+                case 3: return [2];
+            }
+        });
     });
-}); };
-var createPingRequestOptions = function (options, proxyProtocol, websiteProtocol) { return ({
-    url: websiteProtocol + '://' + options.testHost + '/?test=get&ip=' + options.localIP,
-    options: {
-        header: [
-            'User-Agent: Mozilla/4.0',
-            'Accept: text/html',
-            'Referer: http://www.google.com',
-            'Connection: close'
-        ],
-        cookie: 'test=cookie;',
-        data: "test=post",
-        proxy: proxyProtocol + '://' + options.proxyIP + ':' + options.proxyPort,
-        timeout: options.timeout,
-        connectTimeout: options.connectTimeout
-    }
-}); };
+}
+function createPingRequestOptions(options, proxyProtocol, websiteProtocol) {
+    return {
+        url: websiteProtocol + "://" + options.testHost + "/?test=get&ip=" + options.localIP,
+        options: {
+            headers: {
+                'User-Agent': 'Mozilla/4.0',
+                Accept: 'text/html',
+                Referer: 'http://www.google.com',
+                Connection: 'close'
+            },
+            cookie: 'test=cookie;',
+            data: { test: 'post' },
+            proxy: proxyProtocol + "://" + options.proxyIP + ":" + options.proxyPort,
+            timeout: options.timeout,
+            connectTimeout: options.connectTimeout
+        }
+    };
+}
 function testWebsite(url, proxy, regex, website) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var options, result, html;
@@ -52,11 +55,12 @@ function testWebsite(url, proxy, regex, website) {
             switch (_a.label) {
                 case 0:
                     options = {
-                        header: [
-                            'User-Agent: Mozilla/4.0',
-                            'Accept: text/html',
-                            'Connection: close'
-                        ],
+                        headers: {
+                            'User-Agent': 'Mozilla/4.0',
+                            Accept: 'text/html',
+                            Referer: 'http://www.google.com',
+                            Connection: 'close'
+                        },
                         proxy: proxy,
                         ignoreErrors: true
                     };
@@ -66,19 +70,19 @@ function testWebsite(url, proxy, regex, website) {
                     if (website.timeout) {
                         options.timeout = website.timeout;
                     }
-                    return [4, curl_js_1.get(url, options)];
+                    return [4, request_js_1.get(url, options)];
                 case 1:
                     result = _a.sent();
                     html = result.payload;
                     if (regex) {
                         if (_.isFunction(regex)) {
-                            return [2, regex(html, result) ? result.stats : Promise.reject('data doesn\'t match provided function')];
+                            return [2, regex(html, result) ? result.stats : Promise.reject(new Error('data doesn\'t match provided function'))];
                         }
                         else if (_.isRegExp(regex)) {
-                            return [2, regex.test(html) ? result.stats : Promise.reject('data doesn\'t match provided regex')];
+                            return [2, regex.test(html) ? result.stats : Promise.reject(new Error('data doesn\'t match provided regex'))];
                         }
                         else {
-                            return [2, html.indexOf(regex) != -1 ? result.stats : Promise.reject('data doesn\'t contain provided string')];
+                            return [2, html.indexOf(regex) != -1 ? result.stats : Promise.reject(new Error('data doesn\'t contain provided string'))];
                         }
                     }
                     return [2, Promise.reject('regex is not set')];
@@ -120,7 +124,7 @@ function testWebsites(proxy, websites) {
 }
 function testProtocol(proxyProtocol, options) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var httpOptions, httpResult, result, httpsOptions, resHttps, err_3, _a;
+        var httpOptions, httpResult, result, httpsOptions, httpsResult, err_3, _a;
         return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -140,7 +144,8 @@ function testProtocol(proxyProtocol, options) {
                     httpsOptions = createPingRequestOptions(options, proxyProtocol, enums_1.EWebsiteProtocol.https);
                     return [4, pingThroughProxy(httpsOptions.url, httpsOptions.options)];
                 case 3:
-                    resHttps = _b.sent();
+                    httpsResult = _b.sent();
+                    Object.assign(result, httpsResult);
                     result.supportsHttps = true;
                     return [3, 5];
                 case 4:
