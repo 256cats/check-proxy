@@ -9,7 +9,7 @@
     ],
     "declaration": true,
     "noLib": false,
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "sourceMap": false,
     "removeComments": true,
     "outDir": "./build",
