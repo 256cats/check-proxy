@@ -21,6 +21,7 @@ It will return a promise that is either fulfilled with an array of working proxi
 
 ````javascript
   npm install check-proxy --save
+  yarn add check-proxy
 ````
 
 ## Usage
@@ -156,6 +157,9 @@ app.listen(port, ipaddress, function() {
 
     npm run test
 
-## News
+    yarn test
+
+## Changelog
 
 August 2017 - full rewrite in Typescript, readability and speed improvements.
+December 2018 - parallel execution of checks, better tests, minimum supported Node version is 8.

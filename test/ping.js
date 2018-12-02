@@ -1,10 +1,9 @@
 'use strict';
 var assert = require('assert');
-var sinon = require('sinon');
-var ping = require('../build/index.js').ping;
+var ping = require('../build/index').ping;
 
-describe('Ping', function(){
-  it('should return all false', function(){
+describe('Ping', function() {
+  it('should return all false', function() {
     var expected = {"get":false,"post":false,"cookies":false,"referer":false,"user-agent":false,"anonymityLevel":0};
 
     var result = ping(
@@ -30,7 +29,7 @@ describe('Ping', function(){
 
   });
 
-  it('should return all true', function(){
+  it('should return all true', function() {
     var expected = {"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1};
     var result = ping({
         proxy : '127.0.0.1',
@@ -52,7 +51,7 @@ describe('Ping', function(){
 
   });
 
-  it('accepts single IP string and array of IP addresses', function(){
+  it('accepts single IP string and array of IP addresses', function() {
     var expected = {"get":false,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":0};
     var result = ping({
         proxy : '127.0.0.1',

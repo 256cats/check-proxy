@@ -1,439 +1,197 @@
 'use strict';
-var proxyquire = require('proxyquire');
-var assert = require('assert');
-var sinon = require('sinon');
-var curl = require('../build/lib/request.js');
-
-var proxyQuireStub = {
-  '@noCallThru': true,
-};
-var checkProxy = proxyquire('../build/lib/check-proxy.js', {
-  './request.js': proxyQuireStub
-}).default;
-
-var exampleProxy = '201.173.226.94', examplePort = 10000, examplePingServer = 'pingserver.com', localIP = '192.168.1.1';
-
-function generateProxyRequestOptions(protocol) {
-  return {
-    headers: {
-      'User-Agent': 'Mozilla/4.0',
-      Accept: 'text/html',
-      Referer: 'http://www.google.com',
-      Connection: 'close'
-    },
-    cookie: 'test=cookie;',
-    data: { test: 'post'},
-    timeout: 100,
-    connectTimeout: 50,
-    proxy: protocol + '://' + exampleProxy + ':' + examplePort,
-    //ignoreErrors: true
-  }
+var chaiAsPromised = require('chai-as-promised');
+var chai = require('chai');
+chai.use(chaiAsPromised);
+var expect = chai.expect;
+var {
+  startHttpProxy,
+  startHttpOnlyProxy,
+  startPingServer,
+  startSlowProxy,
+  startSocks4Proxy,
+  startSocks5Proxy
+} = require('./proxy');
+var checkProxy = require('../build').check;
+var port = {
+  http: 8000,
+  httpOnly:  8888,
+  ping: 8088,
+  socks4: 9000,
+  socks5: 10000,
+  httpSlow: 11000 
 }
+var localIP = '127.0.0.1';
+var localHost = 'localhost';
 
-function generateWebsiteRequestOptions(protocol) {
-  return {
-    headers: {
-      'User-Agent': 'Mozilla/4.0',
-      Accept: 'text/html',
-      Referer: 'http://www.google.com',
-      Connection: 'close'
-    },
-    proxy: protocol + '://' + exampleProxy + ':' + examplePort,
-    ignoreErrors: true
-  }
-}
-
-function generateStubs(curlGetStub, workingProtocol, https, websites) {
-  workingProtocol = workingProtocol.constructor === Array ? workingProtocol : [workingProtocol];
-  websites = websites || [];
-  https = https || false;
-
-  var options, url = examplePingServer + '/?test=get&ip=' + localIP;
-
-  var curlResult = {
-    payload : JSON.stringify({"get":true,"post":true,"cookies":true,"referer":true,"user-agent":true,"anonymityLevel":1}),
-    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-    success: true
-  };
-
-  var curlEmptyResult = {
-    payload : '<html>proxy is not available</html>',
-    stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-    success: false
-  };
-
-  ['http', 'https', 'socks4', 'socks5'].forEach(function(protocol) {
-    options = generateProxyRequestOptions(protocol);
-
-    //stub post http post request
-    curlGetStub
-      .withArgs('http://' + url, options)
-      .returns(Promise.resolve(
-          workingProtocol.indexOf(protocol) !== -1 ? // if this is working protocol
-            curlResult // return real JSON
-            : curlEmptyResult // otherwise return html which won't be parsed
-      ));
-
-    curlGetStub
-      .withArgs('https://' + url, options)
-      .returns(Promise.resolve(
-          workingProtocol.indexOf(protocol) !== -1 && https ? // if this is working protocol & https should be working
-            curlResult // return real JSON
-            : curlEmptyResult // otherwise return html which won't be parsed
-      ));
-
-    //stub get requests for websites
-    websites.forEach(function(w) {
-      var websiteCurlResult = {
-        payload : w.result,
-        stats : {totalTime : 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000}
-      };
-
-      var options = generateWebsiteRequestOptions(protocol);
-      curlGetStub
-        .withArgs(w.url, options)
-        .returns(Promise.resolve(websiteCurlResult)) // each website passes desired result
-    });
-  })
-
-}
-
-describe('Check-proxy', function(){
-
-  beforeEach(function() {
-    this.get = proxyQuireStub.get = sinon.stub(curl, 'get');
+describe('Check-proxy', function() {
+  before(function(done) {
+    startHttpProxy(port.http);
+    startHttpOnlyProxy(port.httpOnly);
+    startSlowProxy(port.httpSlow);
+    startSocks4Proxy(port.socks4);
+    startSocks5Proxy(port.socks5);
+    startPingServer(port.ping);
+    setTimeout(done, 3000);
   });
 
-  afterEach(function() {
-    curl.get.restore();
-  });
-
-  it('should return socks5 proxy with https support, no websites', function() {
-
-    generateStubs(this.get, 'socks5', true);
-
+  it('should identify socks5 proxy', function() {
     return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50
-
+      testHost: localHost + ':' + port.ping,
+      proxyIP: localIP,
+      proxyPort: port.socks5,
+      localIP: localIP,
+      timeout: 1
     })
     .then(function(result) {
-
-      assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: true,
-        protocol: 'socks5',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {}
-      }]);
-
+      expect(result[0]).to.exist;
+      var proxy = result[0];
+      expect(proxy.supportsHttps).equal(true);
+      expect(proxy.protocol).equal('socks5');
+      expect(proxy.ip).equal('127.0.0.1');
+      expect(proxy.port).equal(port.socks5);
+      expect(proxy.get).equal(true);
+      expect(proxy.post).equal(true);
+      expect(proxy.cookies).equal(true);
+      expect(proxy.referer).equal(true);
+      expect(proxy['user-agent']).equal(true);
+      expect(proxy.anonymityLevel).equal(1);
+      expect(proxy.totalTime).not.null;
+      expect(proxy.connectTime).not.null;
+      expect(proxy.websites).deep.equal({});
+      expect(proxy.country).to.be.null;
     });
 
   });
 
-
-  it('should return socks4 proxy without https support, "test1", "test2" websites working, "test3" not working', function() {
-    var testWebsites = [
-      {
-        name: 'test1',
-        url: 'http://www.example.com',
-        regex: /ok/, // expected result
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test2',
-        url: 'http://www.yandex.ru',
-        regex: /ok/, // expected result
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test3',
-        url: 'http://www.notok.com',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      }
-    ];
-    generateStubs(this.get, 'socks4', false, testWebsites);
-
+  it('should identify http proxy with websites', function() {
     return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50,
-      websites: testWebsites
-    })
-    .then(function(result) {
-      
-      assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: false,
-        protocol: 'socks4',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {
-          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test3: false,
-        }
-      }]);
-
-    });
-
-  });
-
-  it('should return socks4 proxy without https support, "test1", "test2" websites working, "test3" working, "test4",test5 not working, one regex, one function, one substring search, one regex not set', function() {
-    var testWebsites = [
-      {
-        name: 'test1',
-        url: 'http://www.example.com',
-        regex: /ok/, // expected result - regex
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test2',
-        url: 'http://www.yandex.ru',
-        regex: function(html) { // expected result - function
-          return html.indexOf('ok') != -1
+      testHost: localHost + ':' + port.ping,
+      proxyIP: localIP,
+      proxyPort: port.http,
+      localIP: localIP,
+      timeout: 2,
+      websites: [
+        {
+          name: 'test1',
+          url: 'https://www.example.com',
+          regex: /Example Domain/gim,
         },
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test3',
-        url: 'http://www.notok.com',
-        regex: 'ok', // expected result- string
-        result: 'no okdata' // result to be provided by stub
-      },
-      {
-        name: 'test4',
-        url: 'http://www.notok.com',
-
-        result: 'no okdata' // result to be provided by stub
-      },
-      {
-        name: 'test5',
-        url: 'http://www.notok.com',
-        regex: 'substring',
-        result: 'no okdata' // result to be provided by stub
-      }
-    ];
-    generateStubs(this.get, 'socks4', false, testWebsites);
-
-    return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50,
-      websites: testWebsites
+        {
+          name: 'test2',
+          url: 'https://www.example.com',
+          regex: /Failure/gim,
+        },
+      ]
     })
     .then(function(result) {
-      assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: false,
-        protocol: 'socks4',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {
-          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test3: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test4: false,
-          test5: false
-        }
-      }]);
-
+      expect(result[0]).to.exist;
+      var proxy = result[0];
+      expect(proxy.supportsHttps).equal(true);
+      expect(proxy.protocol).equal('http');
+      expect(proxy.ip).equal('127.0.0.1');
+      expect(proxy.port).equal(port.http);
+      expect(proxy.get).equal(true);
+      expect(proxy.post).equal(true);
+      expect(proxy.cookies).equal(true);
+      expect(proxy.referer).equal(true);
+      expect(proxy['user-agent']).equal(true);
+      expect(proxy.anonymityLevel).equal(1);
+      expect(proxy.totalTime).not.null;
+      expect(proxy.connectTime).not.null;
+      expect(proxy.websites).to.be.an('object');
+      expect(proxy.websites.test1).to.be.an('object');
+      expect(proxy.websites.test2).equal(false);
+      expect(proxy.country).to.be.null;
     });
 
   });
 
-
-  it('should return array with only socks5 proxies without https support, "test1", "test2" websites working, "test3" not working', function() {
-    var testWebsites = [
-      {
-        name: 'test1',
-        url: 'http://www.example.com',
-        regex: /ok/, // expected result
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test2',
-        url: 'http://www.yandex.ru',
-        regex: /ok/, // expected result
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test3',
-        url: 'http://www.notok.com',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      }
-    ];
-    generateStubs(this.get, 'socks5', false, testWebsites);
-
+  it('no https support, no anonymity', function() {
     return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50,
-      websites: testWebsites
+      testHost: localHost + ':' + port.ping,
+      proxyIP: localIP,
+      proxyPort: port.httpOnly,
+      localIP: localIP,
+      timeout: 1
     })
     .then(function(result) {
-
-      assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: false,
-        protocol: 'socks5',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {
-          test1: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test2: {"totalTime": 1000, connectTime: 1000, responseCode: 200, receivedLength: 1000},
-          test3: false,
-        }
-      }]);
-
+      expect(result[0]).to.exist;
+      var proxy = result[0];
+      expect(proxy.supportsHttps).equal(false);
+      expect(proxy.protocol).equal('http');
+      expect(proxy.ip).equal('127.0.0.1');
+      expect(proxy.port).equal(port.httpOnly);
+      expect(proxy.get).equal(true);
+      expect(proxy.post).equal(true);
+      expect(proxy.cookies).equal(true);
+      expect(proxy.referer).equal(true);
+      expect(proxy['user-agent']).equal(true);
+      expect(proxy.anonymityLevel).equal(0);
+      expect(proxy.totalTime).not.null;
+      expect(proxy.connectTime).not.null;
+      expect(proxy.websites).deep.equal({});
+      expect(proxy.country).to.be.null;
     });
 
   });
 
-  it('should return http proxy with https support, all websites not working', function() {
-    var testWebsites = [
-      {
-        name: 'test1',
-        url: 'http://www.example.com',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      },
-      {
-        name: 'test2',
-        url: 'http://www.yandex.ru',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      },
-      {
-        name: 'test3',
-        url: 'http://www.notok.com',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      }
-    ];
-    generateStubs(this.get, 'http', true, testWebsites);
-
+  it('should identify socks4 proxy', function() {
     return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50,
-      websites: testWebsites
+      testHost: localHost + ':' + port.ping,
+      proxyIP: localIP,
+      proxyPort: port.socks4,
+      localIP: localIP,
+      timeout: 1
     })
     .then(function(result) {
-      assert.deepEqual(result, [{
-        get: true,
-        post: true,
-        cookies: true,
-        referer: true,
-        'user-agent': true,
-        anonymityLevel: 1,
-        totalTime: 1000,
-        connectTime: 1000,
-        supportsHttps: true,
-        protocol: 'http',
-        ip: exampleProxy,
-        port: examplePort,
-        country: 'MX',
-        websites: {
-          test1: false,
-          test2: false,
-          test3: false,
-        }
-      }]);
-
+      expect(result[0]).to.exist;
+      var proxy = result[0];
+      expect(proxy.supportsHttps).equal(true);
+      expect(proxy.protocol).equal('socks4');
+      expect(proxy.ip).equal('127.0.0.1');
+      expect(proxy.port).equal(port.socks4);
+      expect(proxy.get).equal(true);
+      expect(proxy.post).equal(true);
+      expect(proxy.cookies).equal(true);
+      expect(proxy.referer).equal(true);
+      expect(proxy['user-agent']).equal(true);
+      expect(proxy.anonymityLevel).equal(1);
+      expect(proxy.totalTime).not.null;
+      expect(proxy.connectTime).not.null;
+      expect(proxy.websites).deep.equal({});
+      expect(proxy.country).to.be.null;
     });
 
   });
 
-  it('should return rejected promise when no protocols are working', function() {
-    var testWebsites = [
-      {
-        name: 'test1',
-        url: 'http://www.example.com',
-        regex: /ok/, // expected result
-        result: 'ok' // result to be provided by stub
-      },
-      {
-        name: 'test2',
-        url: 'http://www.yandex.ru',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      },
-      {
-        name: 'test3',
-        url: 'http://www.notok.com',
-        regex: /ok/, // expected result
-        result: 'no data' // result to be provided by stub
-      }
-    ];
-    generateStubs(this.get, '', true, testWebsites);
-
-    return checkProxy({
-      testHost: examplePingServer,
-      proxyIP: exampleProxy,
-      proxyPort: examplePort,
-      localIP: '192.168.1.1',
-      timeout: 100,
-      connectTimeout: 50,
-      websites: testWebsites
+  it('should timeout on slow proxy', function() {
+    var promise = checkProxy({
+      testHost: localHost + ':' + port.ping,
+      proxyIP: localIP,
+      proxyPort: port.httpSlow,
+      localIP: localIP,
+      timeout: 1
     })
     .then(function(result) {
-      assert.equal(result,  "proxy checked, invalid");
-    }, function(result) {
-      assert.equal(result,  "proxy checked, invalid");
+      expect(result[0]).to.exist;
+      var proxy = result[0];
+      expect(proxy.supportsHttps).equal(true);
+      expect(proxy.protocol).equal('socks4');
+      expect(proxy.ip).equal('127.0.0.1');
+      expect(proxy.port).equal(port.socks4);
+      expect(proxy.get).equal(true);
+      expect(proxy.post).equal(true);
+      expect(proxy.cookies).equal(true);
+      expect(proxy.referer).equal(true);
+      expect(proxy['user-agent']).equal(true);
+      expect(proxy.anonymityLevel).equal(1);
+      expect(proxy.totalTime).not.null;
+      expect(proxy.connectTime).not.null;
+      expect(proxy.websites).deep.equal({});
+      expect(proxy.country).to.be.null;
     });
 
-  });
+    return expect(promise).to.eventually.be.rejectedWith(Error);
 
+  });
 });
