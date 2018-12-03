@@ -34,7 +34,7 @@ function default_1(options) {
         }
         function createPingRequestOptions(options, proxyProtocol, websiteProtocol) {
             return {
-                url: websiteProtocol + "://" + options.testHost + "/?test=get&ip=" + options.localIP,
+                url: websiteProtocol + "://" + options.testHost + "?test=get&ip=" + options.localIP,
                 options: {
                     headers: {
                         'User-Agent': 'Mozilla/4.0',

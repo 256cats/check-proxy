@@ -42,7 +42,7 @@ export default async function(options: ICheckProxyOptions): Promise<Array<ITestP
   
   function createPingRequestOptions(options: ICheckProxyOptions, proxyProtocol: EProxyProtocol, websiteProtocol: EWebsiteProtocol): IPingOptions { 
     return {
-      url: `${websiteProtocol}://${options.testHost}/?test=get&ip=${options.localIP}`,
+      url: `${websiteProtocol}://${options.testHost}?test=get&ip=${options.localIP}`,
       options: {
         headers: {
           'User-Agent': 'Mozilla/4.0',
