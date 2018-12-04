@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var geoip = require("geoip-ultralight");
 var _ = require("lodash");
+var appendQuery = require("append-query");
 var enums_1 = require("./enums");
 var request_1 = require("./request");
 function default_1(options) {
@@ -33,8 +34,9 @@ function default_1(options) {
             });
         }
         function createPingRequestOptions(options, proxyProtocol, websiteProtocol) {
+            var url = websiteProtocol + "://" + options.testHost;
             return {
-                url: websiteProtocol + "://" + options.testHost + "?test=get&ip=" + options.localIP,
+                url: appendQuery(url, "test=get&ip=" + options.localIP),
                 options: {
                     headers: {
                         'User-Agent': 'Mozilla/4.0',

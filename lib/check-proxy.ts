@@ -1,6 +1,7 @@
 'use strict'
 import * as geoip from 'geoip-ultralight'
 import * as _ from 'lodash'
+import * as appendQuery from 'append-query'
 import { 
   IGetOptions,
   IGetResolveStats,
@@ -40,9 +41,10 @@ export default async function(options: ICheckProxyOptions): Promise<Array<ITestP
     }
   }
   
-  function createPingRequestOptions(options: ICheckProxyOptions, proxyProtocol: EProxyProtocol, websiteProtocol: EWebsiteProtocol): IPingOptions { 
+  function createPingRequestOptions(options: ICheckProxyOptions, proxyProtocol: EProxyProtocol, websiteProtocol: EWebsiteProtocol): IPingOptions {
+    const url = `${websiteProtocol}://${options.testHost}`
     return {
-      url: `${websiteProtocol}://${options.testHost}?test=get&ip=${options.localIP}`,
+      url: appendQuery(url, `test=get&ip=${options.localIP}`),
       options: {
         headers: {
           'User-Agent': 'Mozilla/4.0',
