@@ -1,4 +1,5 @@
 import { EProxyProtocol, EWebsiteProtocol } from './enums';
+import { PingResult } from './ping';
 
 export interface IGetOptions {
   headers?: { [index: string]: string };
@@ -25,6 +26,11 @@ export interface IGetResolve {
   stats: IGetResolveStats;
 }
 
+export interface PingThroughProxyFullResult extends PingResult {
+  totalTime: number;
+  connectTime: number;
+}
+
 export interface IPingOptions {
   url: string;
   options: IGetOptions;
@@ -48,11 +54,11 @@ export interface ICheckProxyOptions {
   proxyPort: number;
   localIP: string;
   connectTimeout?: number;
-  timeout: 60;
+  timeout: number;
   websites?: Array<ICheckProxyWebsite>;
 }
 
-export interface ITestProtocolResult extends IGetResolve {
+export interface ITestProtocolResult extends PingThroughProxyFullResult {
   supportsHttps: boolean;
   protocol: EProxyProtocol;
   ip: string;

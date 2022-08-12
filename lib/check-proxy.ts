@@ -9,10 +9,12 @@ import {
   IGetResolve,
   ICheckProxyWebsite,
   ITestWebsitesResult,
-  ITestProtocolResult
+  ITestProtocolResult,
+  PingThroughProxyFullResult
 } from './interfaces.d';
 import { EProxyProtocol, EWebsiteProtocol } from './enums';
 import request from './request';
+import { PingResult } from './ping';
 
 export default async function (
   options: ICheckProxyOptions
@@ -22,7 +24,7 @@ export default async function (
   async function pingThroughProxy(
     url: string,
     options: IGetOptions
-  ): Promise<IGetResolve> {
+  ): Promise<PingThroughProxyFullResult> {
     try {
       const result = await get(url, options);
 
@@ -30,7 +32,7 @@ export default async function (
         throw new Error('Request failed');
       }
 
-      const proxyData: any = JSON.parse(result.payload || '');
+      const proxyData: PingThroughProxyFullResult = JSON.parse(result.payload || '');
       proxyData.totalTime = result.stats.totalTime;
       proxyData.connectTime = result.stats.connectTime;
       return proxyData;
@@ -57,7 +59,7 @@ export default async function (
         cookie: 'test=cookie;',
         data: { test: 'post' },
         proxy: `${proxyProtocol}://${options.proxyIP}:${options.proxyPort}`,
-        timeout: options.timeout,
+        timeout: options.timeout || 60,
         connectTimeout: options.connectTimeout
       }
     };

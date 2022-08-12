@@ -47,7 +47,7 @@ function default_1(options) {
                     cookie: 'test=cookie;',
                     data: { test: 'post' },
                     proxy: "".concat(proxyProtocol, "://").concat(options.proxyIP, ":").concat(options.proxyPort),
-                    timeout: options.timeout,
+                    timeout: options.timeout || 60,
                     connectTimeout: options.connectTimeout
                 }
             };

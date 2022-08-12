@@ -7,7 +7,8 @@ function default_1(headers, getParams, postParams, cookies) {
         post: (postParams.test && postParams.test == 'post') || false,
         cookies: (cookies.test && cookies.test == 'cookie') || false,
         referer: (headers.referer && 'http://www.google.com' == headers.referer) || false,
-        'user-agent': (headers['user-agent'] && 'Mozilla/4.0' == headers['user-agent']) || false
+        'user-agent': (headers['user-agent'] && 'Mozilla/4.0' == headers['user-agent']) || false,
+        anonymityLevel: 0
     };
     if (getParams.ip) {
         var ips = _.isArray(getParams.ip) ? getParams.ip : [getParams.ip];
