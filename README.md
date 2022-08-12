@@ -162,4 +162,7 @@ app.listen(port, ipaddress, function() {
 ## Changelog
 
 August 2017 - full rewrite in Typescript, readability and speed improvements.
+
 December 2018 - parallel execution of checks, better tests, minimum supported Node version is 8.
+
+August 2022 - removed http checks.
