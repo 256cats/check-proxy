@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var request = require("request-promise-native");
@@ -34,7 +34,7 @@ function default_1() {
                             timeout: timeout,
                             strictSSL: false
                         };
-                        newRequest = promise_timeout_1.timeout(request(requestOptions), timeout);
+                        newRequest = (0, promise_timeout_1.timeout)(request(requestOptions), timeout);
                         activeRequests.push(newRequest);
                         return [4, newRequest];
                     case 2:
@@ -46,7 +46,8 @@ function default_1() {
                             totalTime: parseInt(response.timingPhases.total, 10) / 1000,
                             firstByte: parseInt(response.timingPhases.firstByte, 10) / 1000,
                             receivedLength: Buffer.byteLength(response.body, 'utf8'),
-                            averageSpeed: Buffer.byteLength(response.body, 'utf8') * 1000 / parseInt(response.timingPhases.total, 10)
+                            averageSpeed: (Buffer.byteLength(response.body, 'utf8') * 1000) /
+                                parseInt(response.timingPhases.total, 10)
                         };
                         return [2, {
                                 success: true,

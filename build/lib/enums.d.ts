@@ -4,6 +4,5 @@ export declare enum EProxyProtocol {
     socks4 = "socks4"
 }
 export declare enum EWebsiteProtocol {
-    http = "http",
     https = "https"
 }

@@ -1,17 +1,16 @@
-'use strict'
-import * as request from 'request-promise-native'
-import * as ProxyAgent from 'proxy-agent'
+import * as request from 'request-promise-native';
+import * as ProxyAgent from 'proxy-agent';
 import { timeout as promiseTimeout, TimeoutError } from 'promise-timeout';
-import { IGetOptions, IGetResolve, IGetResolveStats } from './interfaces.d'
+import { IGetOptions, IGetResolve, IGetResolveStats } from './interfaces.d';
 
-export default function() {
+export default function () {
   let activeRequests = [];
 
   function abortAllRequests() {
-    activeRequests.forEach(request => request.abort());
+    activeRequests.forEach((request) => request.abort());
     activeRequests = [];
   }
-  
+
   async function get(url: string, options: IGetOptions): Promise<IGetResolve> {
     const jar = request.jar();
     options.cookie && jar.setCookie(request.cookie(options.cookie), url);
@@ -28,34 +27,35 @@ export default function() {
         resolveWithFullResponse: true,
         timeout,
         strictSSL: false
-      }
-  
+      };
+
       const newRequest = promiseTimeout(request(requestOptions), timeout);
       activeRequests.push(newRequest);
       const response = await newRequest;
-      const responseCode = response.statusCode
+      const responseCode = response.statusCode;
       const stats: IGetResolveStats = {
         responseCode,
         connectTime: parseInt(response.timings.connect, 10) / 1000,
         totalTime: parseInt(response.timingPhases.total, 10) / 1000,
         firstByte: parseInt(response.timingPhases.firstByte, 10) / 1000,
         receivedLength: Buffer.byteLength(response.body, 'utf8'),
-        averageSpeed: Buffer.byteLength(response.body, 'utf8') * 1000 / parseInt(response.timingPhases.total, 10)
-      }
-  
+        averageSpeed:
+          (Buffer.byteLength(response.body, 'utf8') * 1000) /
+          parseInt(response.timingPhases.total, 10)
+      };
+
       return {
         success: true,
         payload: response.body,
         stats
-      }
-  
-    } catch(err) {
-      if(options.ignoreErrors) {
+      };
+    } catch (err) {
+      if (options.ignoreErrors) {
         return {
           success: false,
           payload: '',
           stats: null
-        }
+        };
       } else {
         throw err;
       }
@@ -65,5 +65,5 @@ export default function() {
   return {
     abortAllRequests,
     get
-  }
+  };
 }

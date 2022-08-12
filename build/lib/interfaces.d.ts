@@ -1,13 +1,10 @@
-import {
-  EProxyProtocol,
-  EWebsiteProtocol
-} from './enums'
+import { EProxyProtocol, EWebsiteProtocol } from './enums';
 
 export interface IGetOptions {
-  headers?: {[index: string]: string};
+  headers?: { [index: string]: string };
   cookie?: string;
   proxy?: string;
-  data?: {[index: string]: string};
+  data?: { [index: string]: string };
   connectTimeout?: number;
   timeout?: number;
   ignoreErrors?: boolean;
@@ -33,7 +30,9 @@ export interface IPingOptions {
   options: IGetOptions;
 }
 
-export type ITestWebsitesResult = {[index: string]: IGetResolveStats|boolean};
+export type ITestWebsitesResult = {
+  [index: string]: IGetResolveStats | boolean;
+};
 
 export interface ICheckProxyWebsite {
   name: string;

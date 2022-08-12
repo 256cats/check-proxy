@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var geoip = require("geoip-ultralight");
@@ -34,9 +34,9 @@ function default_1(options) {
             });
         }
         function createPingRequestOptions(options, proxyProtocol, websiteProtocol) {
-            var url = websiteProtocol + "://" + options.testHost;
+            var url = "".concat(websiteProtocol, "://").concat(options.testHost);
             return {
-                url: appendQuery(url, "test=get&ip=" + options.localIP),
+                url: appendQuery(url, "test=get&ip=".concat(options.localIP)),
                 options: {
                     headers: {
                         'User-Agent': 'Mozilla/4.0',
@@ -46,7 +46,7 @@ function default_1(options) {
                     },
                     cookie: 'test=cookie;',
                     data: { test: 'post' },
-                    proxy: proxyProtocol + "://" + options.proxyIP + ":" + options.proxyPort,
+                    proxy: "".concat(proxyProtocol, "://").concat(options.proxyIP, ":").concat(options.proxyPort),
                     timeout: options.timeout,
                     connectTimeout: options.connectTimeout
                 }
@@ -80,13 +80,19 @@ function default_1(options) {
                             html = result.payload;
                             if (regex) {
                                 if (_.isFunction(regex)) {
-                                    return [2, regex(html, result) ? result.stats : Promise.reject(new Error('data doesn\'t match provided function'))];
+                                    return [2, regex(html, result)
+                                            ? result.stats
+                                            : Promise.reject(new Error("data doesn't match provided function"))];
                                 }
                                 else if (_.isRegExp(regex)) {
-                                    return [2, regex.test(html) ? result.stats : Promise.reject(new Error('data doesn\'t match provided regex'))];
+                                    return [2, regex.test(html)
+                                            ? result.stats
+                                            : Promise.reject(new Error("data doesn't match provided regex"))];
                                 }
                                 else {
-                                    return [2, html.indexOf(regex) != -1 ? result.stats : Promise.reject(new Error('data doesn\'t contain provided string'))];
+                                    return [2, html.indexOf(regex) != -1
+                                            ? result.stats
+                                            : Promise.reject(new Error("data doesn't contain provided string"))];
                                 }
                             }
                             return [2, Promise.reject(new Error('regex is not set'))];
@@ -131,37 +137,23 @@ function default_1(options) {
         }
         function testProtocol(proxyProtocol, options) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var httpOptions, httpResult, result, httpsOptions, httpsResult, err_3, _a;
+                var result, httpsOptions, httpsResult, _a;
                 return tslib_1.__generator(this, function (_b) {
                     switch (_b.label) {
                         case 0:
-                            httpOptions = createPingRequestOptions(options, proxyProtocol, enums_1.EWebsiteProtocol.http);
-                            return [4, pingThroughProxy(httpOptions.url, httpOptions.options)];
+                            httpsOptions = createPingRequestOptions(options, proxyProtocol, enums_1.EWebsiteProtocol.https);
+                            return [4, pingThroughProxy(httpsOptions.url, httpsOptions.options)];
                         case 1:
-                            httpResult = _b.sent();
+                            httpsResult = _b.sent();
                             result = Object.assign({
-                                supportsHttps: false,
+                                supportsHttps: true,
                                 protocol: proxyProtocol,
                                 ip: options.proxyIP,
                                 port: options.proxyPort
-                            }, httpResult);
-                            _b.label = 2;
-                        case 2:
-                            _b.trys.push([2, 4, , 5]);
-                            httpsOptions = createPingRequestOptions(options, proxyProtocol, enums_1.EWebsiteProtocol.https);
-                            return [4, pingThroughProxy(httpsOptions.url, httpsOptions.options)];
-                        case 3:
-                            httpsResult = _b.sent();
-                            Object.assign({}, result, httpsResult);
-                            result.supportsHttps = true;
-                            return [3, 5];
-                        case 4:
-                            err_3 = _b.sent();
-                            return [3, 5];
-                        case 5:
+                            }, httpsResult);
                             _a = result;
-                            return [4, testWebsites(httpOptions.options.proxy, options.websites)];
-                        case 6:
+                            return [4, testWebsites(httpsOptions.options.proxy, options.websites)];
+                        case 2:
                             _a.websites = _b.sent();
                             return [2, result];
                     }
@@ -178,10 +170,11 @@ function default_1(options) {
                 }
             }
             return new Promise(function (resolve) {
-                var promises = Object.keys(enums_1.EProxyProtocol)
-                    .map(function (protocol) { return testProtocol(enums_1.EProxyProtocol[protocol], options)
-                    .then(function (result) { return resolveWrapper(resolve, [result]); })
-                    .catch(function () { }); });
+                var promises = Object.keys(enums_1.EProxyProtocol).map(function (protocol) {
+                    return testProtocol(enums_1.EProxyProtocol[protocol], options)
+                        .then(function (result) { return resolveWrapper(resolve, [result]); })
+                        .catch(function () { });
+                });
                 Promise.all(promises)
                     .then(function () { return resolveWrapper(resolve, []); })
                     .catch(function () { return resolveWrapper(resolve, []); });
@@ -191,7 +184,7 @@ function default_1(options) {
         return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _a = request_1.default(), abortAllRequests = _a.abortAllRequests, get = _a.get;
+                    _a = (0, request_1.default)(), abortAllRequests = _a.abortAllRequests, get = _a.get;
                     country = geoip.lookupCountry(options.proxyIP);
                     options.websites = options.websites || [];
                     return [4, testAllProtocols(options)];
