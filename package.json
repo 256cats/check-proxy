@@ -1,6 +1,6 @@
 {
   "name": "check-proxy",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Advanced Node proxy checker with socks and https support",
   "main": "build/index.js",
   "dependencies": {
